@@ -1,34 +1,75 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import React from 'react';
 import './App.css'
+const title = 'Hello React + Vite'
 
-function App() {
-  const [count, setCount] = useState(0)
 
+const App = () => {
+  const list = [
+    {
+      title: 'React',
+      url: 'https://reactjs.org/',
+      author: 'Jordan Walke',
+      num_comments: 3,
+      points: 4,
+      objectID: 0,
+    },
+    {
+      title: 'Redux',
+      url: 'https://redux.js.org/',
+      author: 'Dan Abramov, Andrew Clark',
+      num_comments: 2,
+      points: 5,
+      objectID: 1,
+    },
+  ];
+
+  const [searchTerm, setSearchTerm] = React.useState('');
+  const handleSearch = (event) => {
+    setSearchTerm(event.target.value)
+  }
+
+  const searched = list.filter((book) => book.title.toLowerCase().includes(searchTerm.toLowerCase()))
   return (
-    <div className="App">
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+    <div>
+      <h1>My Hacker Stories</h1>
+
+      <Search onSearch={handleSearch} searchTerm={searchTerm} />
+
+      <hr />
+
+      <List list={searched} />
     </div>
+  )
+}
+
+const Search = (props) => {
+  return (
+    <div>
+      <label htmlFor="search">Search: </label>
+      <input type="text" id="search" onChange={props.onSearch} />
+      <p>{props.searchTerm}</p>
+    </div>
+  )
+}
+
+const List = (props) => {
+  return (
+    <ul>
+      {
+        props.list.map((book) => <Item key={book.objectID} book={book} />)
+      }
+    </ul>
+  )
+}
+
+const Item = (props) => {
+  return (
+    <li>
+      <a href={props.book.url}>{props.book.title}</a>
+      <span> {props.book.author}</span>
+      <span> {props.book.num_comments}</span>
+      <span> {props.book.points}</span>
+    </li>
   )
 }
 
