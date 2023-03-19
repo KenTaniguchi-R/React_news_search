@@ -1,4 +1,5 @@
 import React from 'react';
+import axios from 'axios';
 import './App.css'
 
 const API_ENDPOINT = 'https://hn.algolia.com/api/v1/search?query=';
@@ -45,20 +46,21 @@ const App = () => {
   const [searchTerm, setSearchTerm] = useStorageState('search', 'React');
   const [url, setUrl] = React.useState(`${API_ENDPOINT}${searchTerm}`)
 
-  const handleFetchStories = React.useCallback(() =>{
+  const handleFetchStories = React.useCallback(async () =>{
     if (!searchTerm) return;
 
     dispatchStories({type: 'STORIES_FETCH_INIT'})
 
-    fetch(url)
-    .then((response) => response.json())
-    .then((result) => {
-      // setStories(result.data.stories); // previous
+    try{
+      const result = await axios.get(url)
       dispatchStories({
         type: 'STORIES_FETCH_SUCCESS',
-        payload: result.hits
+        payload: result.data.hits
       })
-    }).catch(()=> dispatchStories({type: 'STORIES_FETCH_FAILURE'}));
+    }catch{
+      dispatchStories({type: 'STORIES_FETCH_FAILURE'});
+    }
+
   }, [url])
 
   React.useEffect(() => {
@@ -78,8 +80,9 @@ const App = () => {
     setSearchTerm(event.target.value)
   }
 
-  const handleSearchSubmit = () => {
+  const handleSearchSubmit = (event) => {
     setUrl(`${API_ENDPOINT}${searchTerm}`)
+    event.preventDefault();
   }
 
   // const searched = stories.data.filter((story) => story.title.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -87,16 +90,24 @@ const App = () => {
     <div>
       <h1>My Hacker Stories</h1>
 
-      <InputWithLabel id="search" label="Search" type="text" value={searchTerm} onInputChange={handleSearchInput} isFocus={true}>
-        <strong>Search:</strong>
-      </InputWithLabel>
-      <button type="button" disabled={!searchTerm} onClick={handleSearchSubmit} >Search</button>
+      <SearchForm searchTerm={searchTerm} onInputChange={handleSearchInput} onSubmit={handleSearchSubmit} />
 
       <hr />
 
       {stories.error && <p>Error occurred</p>}
       {stories.loading ? <p>loading...</p>:<List list={stories.data} handleRemoveStory={handleRemoveStory} loading={stories.loading}/>}
     </div>
+  )
+}
+
+const SearchForm = ({searchTerm, onInputChange, onSubmit}) =>{
+  return (
+    <form onSubmit={onSubmit}>
+        <InputWithLabel id="search" label="Search" type="text" value={searchTerm} onInputChange={onInputChange} isFocus>
+          <strong>Search:</strong>
+        </InputWithLabel>
+        <button type="submit" disabled={!searchTerm} >Search</button>
+    </form>
   )
 }
 
